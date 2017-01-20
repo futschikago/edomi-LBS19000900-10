@@ -70,6 +70,7 @@ v0.2 Überprüfen auf leere telegramme an E5-E7
 v0.3 nach jedem Befehl kurz Pause machen 
 	 (evtl stürzzt dann die jointSPACE Schnittstelle nicht so oft ab)
 	 Abfragen während das EPG angezeigt wird berücksichtigt.
+	 Diverse Codeverschönerungen ;o)
 	 
 ###[/HELP]###
 
@@ -132,7 +133,7 @@ $port = $E[3]['value'];
 		$agent = "Chrome v1.0 :)";
 		$header[] = "Accept: text/vnd.wap.wml,*.*";
 		$ch = curl_init($url);
-
+		usleep(10000);
 		if ($ch)
 		{
 			curl_setopt($ch,    CURLOPT_RETURNTRANSFER, 1);
@@ -148,18 +149,19 @@ $port = $E[3]['value'];
 
 			$tmp = curl_exec ($ch);
 			curl_close ($ch);
+			
 		}
 		return $tmp;
 	}
 	
 	function senden($id) {
 		global $ip, $port, $V, $E;
-		if (logic_getVar($id,4)==1) { // Source umschalten
+		if ($V[4]==1) { // Source umschalten
 			$_url = "http://".$ip.":".$port."/1/sources/current";
 			$_buffer = HomepageLaden($_url, "{\"id\":\"".$E[4]['value']."\"}");
 		}
-		usleep(10000);
-		if (logic_getVar($id,5)==1) { // Mute ON/OFF
+		
+		if ($V[5]==1) { // Mute ON/OFF
 			$_url = "http://".$ip.":".$port."/1/audio/volume";
 			if ($E[5]['value']==0){
 				$_buffer = HomepageLaden($_url, "{\"muted\":\""."false"."\"}");
@@ -167,25 +169,25 @@ $port = $E[3]['value'];
 			else{
 				$_buffer = HomepageLaden($_url, "{\"muted\":\""."true"."\"}");
 			}
-		usleep(10000);
+		
 		}
-		if (logic_getVar($id,6)) { // Fernbedienungs Kommando
+		if ($V[6]) { // Fernbedienungs Kommando
 			$_url = "http://".$ip.":".$port."/1/input/key";
 			$_buffer = HomepageLaden($_url, "{\"key\":\"".$E[6]['value']."\"}");
 		}
-		usleep(10000);
-		if (logic_getVar($id,7)==1) { // Volume
+		
+		if ($V[7]==1) { // Volume
 			$_url = "http://".$ip.":".$port."/1/audio/volume";
 			$_buffer = HomepageLaden($_url, "{\"current\":\"".$E[7]['value']."\"}");
 		}
-		usleep(10000);
+		
 	}
 	
 	function lesen($id) {
 		global $ip, $port, $V, $E;
 
 		//Volume einlesen
-		$_url = "http://".$ip.":".$port."/"."1/audio/volume";
+		$_url = "http://".$ip.":".$port."/1/audio/volume";
 		$_buffer = HomepageLaden($_url, null);
 		$json=json_decode($_buffer);
 		if ($json <>''){
@@ -197,9 +199,9 @@ $port = $E[3]['value'];
 			}
 			$json="";
 		}
-		usleep(10000);
+		
 		// Aktuelle Source einlesen
-		$_url = "http://".$ip.":".$port."/"."1/sources/current";
+		$_url = "http://".$ip.":".$port."/1/sources/current";
 		$_buffer = HomepageLaden($_url, null);
 		$json=json_decode($_buffer);
 		$_sourceid = "";
@@ -207,7 +209,7 @@ $port = $E[3]['value'];
 			$_sourceid = $json->{'id'};
 			$json="";
 			// Aktuellen Source Namen finden
-			$_url = "http://".$ip.":".$port."/"."1/sources";
+			$_url = "http://".$ip.":".$port."/1/sources";
 			$_buffer = HomepageLaden($_url, null);
 			$json=json_decode($_buffer);
 			if ($json <>''&& $_sourceid <> ""){
@@ -218,7 +220,7 @@ $port = $E[3]['value'];
 				setLogicLinkAusgang($id,3,"EPG");
 			}
 		}
-		usleep(10000);
+		
 		// Aktuelle Kanal einlesen
 		if ($_sourceid >= 19 ) {
 			setLogicLinkAusgang($id,4,$_sourcename);
@@ -243,12 +245,12 @@ $port = $E[3]['value'];
 				}
 			}
 		}
-		usleep(10000);
+		
 	}
 	
 	
 //Daten senden und lesen
-if ($V[4]<>0 || $V[5]<>0 || $V[6] || $V[7]) {
+if ($V[4] || $V[5] || $V[6] || $V[7]) {
 	senden($id);
 	usleep(500000); // 500ms warten auf änderungen
 	lesen($id);
