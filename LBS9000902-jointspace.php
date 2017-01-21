@@ -133,7 +133,7 @@ $port = $E[3]['value'];
 		$agent = "Chrome v1.0 :)";
 		$header[] = "Accept: text/vnd.wap.wml,*.*";
 		$ch = curl_init($url);
-		usleep(10000);
+		usleep(50000); //50ms pause zwischen den anfragen
 		if ($ch)
 		{
 			curl_setopt($ch,    CURLOPT_RETURNTRANSFER, 1);
